@@ -3,14 +3,16 @@ package main
 import (
 	"log"
 
-	"github.com/truearken/valclient/client"
+	valclient "github.com/truearken/valclient/client"
 )
 
 func main() {
-	client, err := client.NewValClient(client.REGION_EU)
+	client, err := valclient.NewClient()
 	if err != nil {
 		panic(err)
 	}
+
+	log.Print(client.Header.Get("X-Riot-Clientversion"))
 
 	loadout, err := client.GetPlayerLoadout()
 	if err != nil {
