@@ -20,7 +20,7 @@ package main
 import (
 	"log"
 
-	valclient "github.com/truearken/valclient/client"
+	"github.com/truearken/valclient/valclient"
 )
 
 func main() {
