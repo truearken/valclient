@@ -2,6 +2,8 @@
 
 A Go module that wraps the Valorant game API.
 
+Supports flexes via newest v3 content API.
+
 ## Installation
 
 To use the `valclient` module in your Go project, you can install it using `go get`:
@@ -56,3 +58,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Credits
 
 This project is inspired by [valclient.py](https://github.com/colinhartigan/valclient.py) by Colin Hartigan.
+
+Documentation for the endpoints is primarily from this [Documentation](https://valapidocs.techchrism.me/endpoint/fetch-content).
