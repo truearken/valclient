@@ -1,7 +1,5 @@
 package valclient
 
-import "net/http"
-
 const CLIENT_PLATFORM_B64 = "ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuMjU2LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9"
 
 type Region string
@@ -33,29 +31,33 @@ var ShardForRegion = map[Region]Shard{
 	REGION_KR:    SHARD_KR,
 }
 
-type ItemTypeId string
+type ItemTypeID string
 
 const (
-	ITEM_TYPE_AGENTS        ItemTypeId = "01bb38e1-da47-4e6a-9b3d-945fe4655707"
-	ITEM_TYPE_CONTRACTS     ItemTypeId = "f85cb6f7-33e5-4dc8-b609-ec7212301948"
-	ITEM_TYPE_SPRAYS        ItemTypeId = "d5f120f8-ff8c-4aac-92ea-f2b5acbe9475"
-	ITEM_TYPE_GUN_BUDDIES   ItemTypeId = "dd3bf334-87f3-40bd-b043-682a57a8dc3a"
-	ITEM_TYPE_CARDS         ItemTypeId = "3f296c07-64c3-494c-923b-fe692a4fa1bd"
-	ITEM_TYPE_SKINS         ItemTypeId = "e7c63390-eda7-46e0-bb7a-a6abdacd2433"
-	ITEM_TYPE_SKIN_VARIANTS ItemTypeId = "3ad1b2b2-acdb-4524-852f-954a76ddae0a"
-	ITEM_TYPE_TITLES        ItemTypeId = "de7caa6b-adf7-4588-bbd1-143831e786c6"
+	ITEM_TYPE_AGENTS        ItemTypeID = "01bb38e1-da47-4e6a-9b3d-945fe4655707"
+	ITEM_TYPE_CONTRACTS     ItemTypeID = "f85cb6f7-33e5-4dc8-b609-ec7212301948"
+	ITEM_TYPE_SPRAYS        ItemTypeID = "d5f120f8-ff8c-4aac-92ea-f2b5acbe9475"
+	ITEM_TYPE_GUN_BUDDIES   ItemTypeID = "dd3bf334-87f3-40bd-b043-682a57a8dc3a"
+	ITEM_TYPE_CARDS         ItemTypeID = "3f296c07-64c3-494c-923b-fe692a4fa1bd"
+	ITEM_TYPE_SKINS         ItemTypeID = "e7c63390-eda7-46e0-bb7a-a6abdacd2433"
+	ITEM_TYPE_SKIN_VARIANTS ItemTypeID = "3ad1b2b2-acdb-4524-852f-954a76ddae0a"
+	ITEM_TYPE_TITLES        ItemTypeID = "de7caa6b-adf7-4588-bbd1-143831e786c6"
 )
 
-type Player struct {
-	Uuid string
-}
+type ContentType string
 
-type ValClient struct {
-	Shard  Shard
-	Region Region
-	Player *Player
-	Header http.Header
-}
+const (
+	CONTENT_TYPE_EPISODE ContentType = "episode"
+	CONTENT_TYPE_ACT     ContentType = "act"
+)
+
+type XpSourceId string
+
+const (
+	XP_SOURCE_ID_TIME_PLAYED      XpSourceId = "time-played"
+	XP_SOURCE_ID_MATCH_WIN        XpSourceId = "match-win"
+	XP_SOURCE_ID_FIRST_WON_OF_DAY XpSourceId = "first-win-of-the-day"
+)
 
 type Gun struct {
 	ID              string `json:"ID"`

@@ -2,12 +2,25 @@ package valclient
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"regexp"
+	"strings"
 )
+
+type ValClient struct {
+	Shard  Shard
+	Region Region
+	Player *struct {
+		Uuid string
+	}
+	Header http.Header
+}
 
 func NewClient() (*ValClient, error) {
 	lockfile, err := getLockFile()
@@ -35,70 +48,10 @@ func NewClient() (*ValClient, error) {
 		Region: logfile.Region,
 		Shard:  logfile.Shard,
 		Header: header,
-		Player: &Player{
+		Player: &struct{ Uuid string }{
 			Uuid: authResp.Subject,
 		},
 	}, nil
-}
-
-type GetPlayerLoadoutRequest struct {
-	Subject           string               `json:"Subject"`
-	Version           int                  `json:"Version"`
-	Guns              []*Gun               `json:"Guns"`
-	ActiveExpressions []*ActiveExpressions `json:"ActiveExpressions"`
-	Identity          *Identity            `json:"Identity"`
-	Incognito         bool                 `json:"Incognito"`
-}
-
-func (c *ValClient) GetPlayerLoadout() (*GetPlayerLoadoutRequest, error) {
-	url := fmt.Sprintf("https://pd.%s.a.pvp.net/personalization/v3/players/%s/playerloadout", c.Shard, c.Player.Uuid)
-	loadout := new(GetPlayerLoadoutRequest)
-
-	err := c.RunRequest(http.MethodGet, url, nil, loadout)
-	if err != nil {
-		return nil, err
-	}
-
-	return loadout, nil
-}
-
-type SetPlayerLoadoutRequest struct {
-	Guns              []*Gun               `json:"Guns"`
-	ActiveExpressions []*ActiveExpressions `json:"ActiveExpressions"`
-	Identity          *Identity            `json:"Identity"`
-	Incognito         bool                 `json:"Incognito"`
-}
-
-func (c *ValClient) SetPlayerLoadout(loadout *SetPlayerLoadoutRequest) (*GetPlayerLoadoutRequest, error) {
-	url := fmt.Sprintf("https://pd.%s.a.pvp.net/personalization/v3/players/%s/playerloadout", c.Shard, c.Player.Uuid)
-	responseloadout := new(GetPlayerLoadoutRequest)
-
-	err := c.RunRequest(http.MethodPut, url, loadout, responseloadout)
-	if err != nil {
-		return nil, err
-	}
-
-	return responseloadout, nil
-}
-
-type OwnedItems struct {
-	ItemTypeID   string `json:"ItemTypeID"`
-	Entitlements []struct {
-		TypeID string `json:"TypeID"`
-		ItemID string `json:"ItemID"`
-	} `json:"Entitlements"`
-}
-
-func (c *ValClient) GetOwnedItems(itemType ItemTypeId) (*OwnedItems, error) {
-	url := fmt.Sprintf("https://pd.%s.a.pvp.net/store/v1/entitlements/%s/%s", c.Shard, c.Player.Uuid, itemType)
-	ownedItems := new(OwnedItems)
-
-	err := c.RunRequest(http.MethodGet, url, nil, ownedItems)
-	if err != nil {
-		return nil, err
-	}
-
-	return ownedItems, nil
 }
 
 func (c *ValClient) RunRequest(method, url string, in any, out any) error {
@@ -140,4 +93,133 @@ func (c *ValClient) RunRequest(method, url string, in any, out any) error {
 	}
 
 	return nil
+}
+
+type AuthenticateResponse struct {
+	AccessToken string `json:"accessToken"`
+	Subject     string `json:"subject"`
+	Token       string `json:"token"`
+}
+
+func authenticate(port, password string) (*AuthenticateResponse, error) {
+	authResp := new(AuthenticateResponse)
+	if err := runLocalRequest(port, password, "/entitlements/v1/token", authResp); err != nil {
+		return nil, err
+	}
+
+	return authResp, nil
+}
+
+func runLocalRequest(port, password, endpoint string, out any) error {
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
+
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://127.0.0.1:%s%s", port, endpoint), nil)
+	if err != nil {
+		return err
+	}
+	req.SetBasicAuth("riot", password)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return errors.New("Is VALORANT running? error occurred while running local request: " + err.Error())
+	}
+	defer resp.Body.Close()
+
+	bytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("Is VALORANT running? error occurred while running local request: " + string(bytes))
+	}
+
+	err = json.Unmarshal(bytes, out)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type LockfileData struct {
+	Name     string
+	Pid      string
+	Port     string
+	Password string
+	Protocol string
+}
+
+func getLockFile() (*LockfileData, error) {
+	lockfilePath := fmt.Sprintf("%s\\%s", os.Getenv("LOCALAPPDATA"), "Riot Games\\Riot Client\\Config\\lockfile")
+	lockfile, err := os.Open(lockfilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	fileData, err := io.ReadAll(lockfile)
+	if err != nil {
+		return nil, err
+	}
+	lockfileKeys := strings.Split(string(fileData), ":")
+	lockfileStruct := &LockfileData{
+		Name:     lockfileKeys[0],
+		Pid:      lockfileKeys[1],
+		Port:     lockfileKeys[2],
+		Password: lockfileKeys[3],
+		Protocol: lockfileKeys[4],
+	}
+
+	return lockfileStruct, err
+}
+
+type LogFileData struct {
+	Region        Region
+	Shard         Shard
+	ClientVersion string
+}
+
+func readLogfile() (*LogFileData, error) {
+	logfilePath := fmt.Sprintf("%s\\%s", os.Getenv("LOCALAPPDATA"), "VALORANT\\Saved\\Logs\\ShooterGame.log")
+	file, err := os.Open(logfilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	bytes, err := io.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+
+	regex, err := regexp.Compile("https://glz-(.+?)-1.(.+?).a.pvp.net")
+	if err != nil {
+		return nil, err
+	}
+
+	shardRegionMatches := regex.FindSubmatch(bytes)
+	if len(shardRegionMatches) != 3 {
+		return nil, errors.New("no valid shard/region matches found in log file")
+	}
+
+	regex, err = regexp.Compile("CI server version: (release-[^-]*)(.*)")
+	if err != nil {
+		return nil, err
+	}
+
+	clientVersionMatches := regex.FindSubmatch(bytes)
+	if len(clientVersionMatches) != 3 {
+		return nil, errors.New("no valid shard/region matches found in log file")
+	}
+
+	clientVersionString := fmt.Sprintf("%s-shipping%s", clientVersionMatches[1], clientVersionMatches[2])
+
+	return &LogFileData{
+		Region:        Region(shardRegionMatches[1]),
+		Shard:         Shard(shardRegionMatches[2]),
+		ClientVersion: strings.TrimSpace(clientVersionString),
+	}, nil
 }
