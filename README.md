@@ -26,7 +26,7 @@ import (
 )
 
 func main() {
-	client, err := valclient.NewClient(valclient.REGION_EU)
+	client, err := valclient.NewClient()
 	if err != nil {
 		panic(err)
 	}
