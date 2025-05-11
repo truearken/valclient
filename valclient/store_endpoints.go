@@ -13,7 +13,7 @@ type GetOwnedItemsResponse struct {
 }
 
 func (c *ValClient) GetOwnedItems(itemType ItemTypeID) (*GetOwnedItemsResponse, error) {
-	url := c.buildUrl("https://pd.{shard}.a.pvp.net/store/v1/entitlements/{puuid}/{ItemTypeID}", "{ItemTypeID}", string(itemType))
+	url := c.BuildUrl("https://pd.{shard}.a.pvp.net/store/v1/entitlements/{puuid}/{ItemTypeID}", "{ItemTypeID}", string(itemType))
 	ownedItems := new(GetOwnedItemsResponse)
 
 	err := c.RunRequest(http.MethodGet, url, nil, ownedItems)

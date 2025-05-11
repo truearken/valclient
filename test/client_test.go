@@ -72,6 +72,22 @@ func TestSetPlayerLoadout(t *testing.T) {
 	}
 }
 
+func TestGetPlayerMmr(t *testing.T) {
+	client, err := valclient.NewClient()
+	if err != nil {
+		t.Fatalf("unable to create client: %v", err)
+	}
+
+	playerMmr, err := client.GetPlayerMmr()
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+
+	if len(playerMmr.QueueSkills) == 0 {
+		t.Fatalf("expected QueueSkills not to be empty")
+	}
+}
+
 func TestGetOwnedItems(t *testing.T) {
 	client, err := valclient.NewClient()
 	if err != nil {
@@ -124,10 +140,64 @@ func TestGetAccountXp(t *testing.T) {
 	}
 
 	if len(accountXp.History) == 0 {
-		t.Fatalf("expected Seasons not to be empty")
+		t.Fatalf("expected History not to be empty")
 	}
 
 	if accountXp.Progress.Level == 0 {
 		t.Fatalf("expected Level not to be 0")
+	}
+}
+
+func TestGetMatchHistory(t *testing.T) {
+	client, err := valclient.NewClient()
+	if err != nil {
+		t.Fatalf("unable to create client: %v", err)
+	}
+
+	history, err := client.GetMatchHistory(0, 0, "")
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+
+	if len(history.History) == 0 {
+		t.Fatalf("expected all History not to be empty. make sure you have at least one game played")
+	}
+
+	history, err = client.GetMatchHistory(0, 0, valclient.QUEUE_DEATHMATCH)
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+
+	if len(history.History) == 0 {
+		t.Fatalf("expected deathmatch History not to be empty. make sure you have at least one deathmatch game played")
+	}
+
+	if history.History[0].QueueID != valclient.QUEUE_DEATHMATCH {
+		t.Fatalf("expected QueueID to be QUEUE_DEATHMATCH")
+	}
+}
+
+func TestGetMatchDetails(t *testing.T) {
+	client, err := valclient.NewClient()
+	if err != nil {
+		t.Fatalf("unable to create client: %v", err)
+	}
+
+	history, err := client.GetMatchHistory(0, 0, "")
+	if err != nil {
+		t.Fatalf("expected no error when getting history, got: %v", err)
+	}
+
+	if len(history.History) == 0 {
+		t.Fatalf("expected all History not to be empty. make sure you have at least one game played")
+	}
+
+	matchDetails, err := client.GetMatchDetails(history.History[0].MatchID)
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+
+	if matchDetails.MatchInfo.MatchID == "" {
+		t.Fatalf("expected matchId not to be empty")
 	}
 }

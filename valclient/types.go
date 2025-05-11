@@ -65,6 +65,117 @@ const (
 	COMPETITIVE_MOVEMENT_UNKNOWN CompetitiveMovement = "MOVEMENT_UNKNOWN"
 )
 
+type ProvisioningFlowID string
+
+const (
+	PROVISIONING_FLOW_ID_MATCHMAKING ProvisioningFlowID = "Matchmaking"
+	PROVISIONING_FLOW_ID_CUSTOM_GAME ProvisioningFlowID = "CustomGame"
+)
+
+type CompletionState string
+
+const (
+	COMPLETION_STATE_SURRENDERED CompletionState = "Surrendered"
+	COMPLETION_STATE_COMPLETED   CompletionState = "Completed"
+	COMPLETION_STATE_VOTE_DRAW   CompletionState = "VoteDraw"
+	COMPLETION_STATE_EMPTY       CompletionState = ""
+)
+
+type PlatformType string
+
+const (
+	PLATFORM_TYPE_PC PlatformType = "PC"
+)
+
+type TeamID string
+
+const (
+	TEAM_ID_BLUE TeamID = "Blue"
+	TEAM_ID_RED  TeamID = "Red"
+)
+
+type RoundResult string
+
+const (
+	ROUND_RESULT_ELIMINATED          RoundResult = "Eliminated"
+	ROUND_RESULT_BOMB_DETONATED      RoundResult = "Bomb detonated"
+	ROUND_RESULT_BOMB_DEFUSED        RoundResult = "Bomb defused"
+	ROUND_RESULT_SURRENDERED         RoundResult = "Surrendered"
+	ROUND_RESULT_ROUND_TIMER_EXPIRED RoundResult = "Round timer expired"
+)
+
+type RoundCeremony string
+
+const (
+	ROUND_CEREMONY_DEFAULT  RoundCeremony = "CeremonyDefault"
+	ROUND_CEREMONY_TEAM_ACE RoundCeremony = "CeremonyTeamAce"
+	ROUND_CEREMONY_FLAWLESS RoundCeremony = "CeremonyFlawless"
+	ROUND_CEREMONY_CLOSER   RoundCeremony = "CeremonyCloser"
+	ROUND_CEREMONY_CLUTCH   RoundCeremony = "CeremonyClutch"
+	ROUND_CEREMONY_THRIFTY  RoundCeremony = "CeremonyThrifty"
+	ROUND_CEREMONY_ACE      RoundCeremony = "CeremonyAce"
+	ROUND_CEREMONY_EMPTY    RoundCeremony = ""
+)
+
+type PlantSite string
+
+const (
+	PLANT_SITE_A     PlantSite = "A"
+	PLANT_SITE_B     PlantSite = "B"
+	PLANT_SITE_C     PlantSite = "C"
+	PLANT_SITE_EMPTY PlantSite = ""
+)
+
+type RoundResultCode string
+
+const (
+	ROUND_RESULT_CODE_ELIMINATION RoundResultCode = "Elimination"
+	ROUND_RESULT_CODE_DETONATE    RoundResultCode = "Detonate"
+	ROUND_RESULT_CODE_DEFUSE      RoundResultCode = "Defuse"
+	ROUND_RESULT_CODE_SURRENDERED RoundResultCode = "Surrendered"
+	ROUND_RESULT_CODE_EMPTY       RoundResultCode = ""
+)
+
+type DamageType string
+
+const (
+	DAMAGE_TYPE_WEAPON  DamageType = "Weapon"
+	DAMAGE_TYPE_BOMB    DamageType = "Bomb"
+	DAMAGE_TYPE_ABILITY DamageType = "Ability"
+	DAMAGE_TYPE_FALL    DamageType = "Fall"
+	DAMAGE_TYPE_MELEE   DamageType = "Melee"
+	DAMAGE_TYPE_INVALID DamageType = "Invalid"
+	DAMAGE_TYPE_EMPTY   DamageType = ""
+)
+
+type DamageItem string
+
+const (
+	DAMAGE_ITEM_ULTIMATE        DamageItem = "Ultimate"
+	DAMAGE_ITEM_ABILITY1        DamageItem = "Ability1"
+	DAMAGE_ITEM_ABILITY2        DamageItem = "Ability2"
+	DAMAGE_ITEM_GRENADE_ABILITY DamageItem = "GrenadeAbility"
+	DAMAGE_ITEM_PRIMARY         DamageItem = "Primary"
+	DAMAGE_ITEM_EMPTY           DamageItem = ""
+)
+
+type QueueID string
+
+const (
+	QUEUE_COMPETITIVE     QueueID = "competitive"
+	QUEUE_DEATHMATCH      QueueID = "deathmatch"
+	QUEUE_TEAM_DEATHMATCH QueueID = "hurm"
+	QUEUE_CUSTOM          QueueID = "custom"
+	QUEUE_ESCALATION      QueueID = "ggteam"
+	QUEUE_NEW_MAP         QueueID = "newmap"
+	QUEUE_REPLICATION     QueueID = "onefa"
+	QUEUE_PREMIER         QueueID = "premier"
+	QUEUE_SNOWBALL_FIGHT  QueueID = "snowball"
+	QUEUE_SPIKERUSH       QueueID = "spikerush"
+	QUEUE_SWIFTPLAY       QueueID = "swiftplay"
+	QUEUE_UNRATED         QueueID = "unrated"
+)
+
 type Gun struct {
 	ID              string `json:"ID"`
 	CharmInstanceID string `json:"CharmInstanceID,omitempty"`

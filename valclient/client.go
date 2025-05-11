@@ -99,7 +99,7 @@ func (c *ValClient) RunRequest(method, url string, in any, out any) error {
 Automatically replaces shard, region and puuid in string.
 For additional parameters use the corresponding argument
 */
-func (c *ValClient) buildUrl(urlWithParams string, additionalParams ...string) string {
+func (c *ValClient) BuildUrl(urlWithParams string, additionalParams ...string) string {
 	params := []string{"{shard}", string(c.Shard), "{region}", string(c.Region), "{puuid}", c.Player.Uuid}
 	params = append(params, additionalParams...)
 	r := strings.NewReplacer(params...)
