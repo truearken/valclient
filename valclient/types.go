@@ -59,6 +59,12 @@ const (
 	XP_SOURCE_ID_FIRST_WON_OF_DAY XpSourceId = "first-win-of-the-day"
 )
 
+type CompetitiveMovement string
+
+const (
+	COMPETITIVE_MOVEMENT_UNKNOWN CompetitiveMovement = "MOVEMENT_UNKNOWN"
+)
+
 type Gun struct {
 	ID              string `json:"ID"`
 	CharmInstanceID string `json:"CharmInstanceID,omitempty"`

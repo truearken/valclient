@@ -1,7 +1,6 @@
 package valclient
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -25,8 +24,8 @@ type GetContentResponse struct {
 	} `json:"Events"`
 }
 
-func (c *ValClient) GetContentRequest() (*GetContentResponse, error) {
-	url := fmt.Sprintf("https://shared.%s.a.pvp.net/content-service/v3/content", c.Shard)
+func (c *ValClient) GetContent() (*GetContentResponse, error) {
+	url := c.buildUrl("https://shared.{shard}.a.pvp.net/content-service/v3/content")
 	content := new(GetContentResponse)
 
 	if err := c.RunRequest(http.MethodGet, url, nil, content); err != nil {
@@ -66,7 +65,7 @@ type GetAccountXpResponse struct {
 }
 
 func (c *ValClient) GetAccountXp() (*GetAccountXpResponse, error) {
-	url := fmt.Sprintf("https://pd.%s.a.pvp.net/account-xp/v1/players/%s", c.Shard, c.Player.Uuid)
+	url := c.buildUrl("https://pd.{shard}.a.pvp.net/account-xp/v1/players/{puuid}")
 	accountXp := new(GetAccountXpResponse)
 
 	if err := c.RunRequest(http.MethodGet, url, nil, accountXp); err != nil {
@@ -86,7 +85,7 @@ type GetPlayerLoadoutRequest struct {
 }
 
 func (c *ValClient) GetPlayerLoadout() (*GetPlayerLoadoutRequest, error) {
-	url := fmt.Sprintf("https://pd.%s.a.pvp.net/personalization/v3/players/%s/playerloadout", c.Shard, c.Player.Uuid)
+	url := c.buildUrl("https://pd.{shard}.a.pvp.net/personalization/v3/players/{puuid}/playerloadout")
 	loadout := new(GetPlayerLoadoutRequest)
 
 	if err := c.RunRequest(http.MethodGet, url, nil, loadout); err != nil {
@@ -104,7 +103,7 @@ type SetPlayerLoadoutRequest struct {
 }
 
 func (c *ValClient) SetPlayerLoadout(loadout *SetPlayerLoadoutRequest) (*GetPlayerLoadoutRequest, error) {
-	url := fmt.Sprintf("https://pd.%s.a.pvp.net/personalization/v3/players/%s/playerloadout", c.Shard, c.Player.Uuid)
+	url := c.buildUrl("https://pd.{shard}.a.pvp.net/personalization/v3/players/{puuid}/playerloadout")
 	responseloadout := new(GetPlayerLoadoutRequest)
 
 	if err := c.RunRequest(http.MethodPut, url, loadout, responseloadout); err != nil {
@@ -114,17 +113,50 @@ func (c *ValClient) SetPlayerLoadout(loadout *SetPlayerLoadoutRequest) (*GetPlay
 	return responseloadout, nil
 }
 
-type GetOwnedItemsResponse struct {
-	ItemTypeID   ItemTypeID `json:"ItemTypeID"`
-	Entitlements []struct {
-		TypeID string `json:"TypeID"`
-		ItemID string `json:"ItemID"`
-	} `json:"Entitlements"`
+type GetPlayerMmrResponse struct {
+	Version                     int    `json:"Version"`
+	Subject                     string `json:"Subject"`
+	NewPlayerExperienceFinished bool   `json:"NewPlayerExperienceFinished"`
+	QueueSkills                 map[string]struct {
+		TotalGamesNeededForRating         int `json:"TotalGamesNeededForRating"`
+		TotalGamesNeededForLeaderboard    int `json:"TotalGamesNeededForLeaderboard"`
+		CurrentSeasonGamesNeededForRating int `json:"CurrentSeasonGamesNeededForRating"`
+		SeasonalInfoBySeasonID            map[string]struct {
+			SeasonID                   string         `json:"SeasonID"`
+			NumberOfWins               int            `json:"NumberOfWins"`
+			NumberOfWinsWithPlacements int            `json:"NumberOfWinsWithPlacements"`
+			NumberOfGames              int            `json:"NumberOfGames"`
+			Rank                       int            `json:"Rank"`
+			CapstoneWins               int            `json:"CapstoneWins"`
+			LeaderboardRank            int            `json:"LeaderboardRank"`
+			CompetitiveTier            int            `json:"CompetitiveTier"`
+			RankedRating               int            `json:"RankedRating"`
+			WinsByTier                 map[string]int `json:"WinsByTier"`
+			GamesNeededForRating       int            `json:"GamesNeededForRating"`
+			TotalWinsNeededForRank     int            `json:"TotalWinsNeededForRank"`
+		} `json:"SeasonalInfoBySeasonID"`
+	} `json:"QueueSkills"`
+	LatestCompetitiveUpdate struct {
+		MatchID                      string              `json:"MatchID"`
+		MapID                        string              `json:"MapID"`
+		SeasonID                     string              `json:"SeasonID"`
+		MatchStartTime               int                 `json:"MatchStartTime"`
+		TierAfterUpdate              int                 `json:"TierAfterUpdate"`
+		TierBeforeUpdate             int                 `json:"TierBeforeUpdate"`
+		RankedRatingAfterUpdate      int                 `json:"RankedRatingAfterUpdate"`
+		RankedRatingBeforeUpdate     int                 `json:"RankedRatingBeforeUpdate"`
+		RankedRatingEarned           int                 `json:"RankedRatingEarned"`
+		RankedRatingPerformanceBonus int                 `json:"RankedRatingPerformanceBonus"`
+		CompetitiveMovement          CompetitiveMovement `json:"CompetitiveMovement"`
+		AFKPenalty                   int                 `json:"AFKPenalty"`
+	} `json:"LatestCompetitiveUpdate"`
+	IsLeaderboardAnonymized bool `json:"IsLeaderboardAnonymized"`
+	IsActRankBadgeHidden    bool `json:"IsActRankBadgeHidden"`
 }
 
-func (c *ValClient) GetOwnedItems(itemType ItemTypeID) (*GetOwnedItemsResponse, error) {
-	url := fmt.Sprintf("https://pd.%s.a.pvp.net/store/v1/entitlements/%s/%s", c.Shard, c.Player.Uuid, itemType)
-	ownedItems := new(GetOwnedItemsResponse)
+func (c *ValClient) GetPlayerMmr() (*GetPlayerMmrResponse, error) {
+	url := c.buildUrl("https://pd.{shard}.a.pvp.net/mmr/v1/players/{puuid}")
+	ownedItems := new(GetPlayerMmrResponse)
 
 	err := c.RunRequest(http.MethodGet, url, nil, ownedItems)
 	if err != nil {

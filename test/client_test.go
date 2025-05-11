@@ -98,7 +98,7 @@ func TestGetContent(t *testing.T) {
 		t.Fatalf("unable to create client: %v", err)
 	}
 
-	content, err := client.GetContentRequest()
+	content, err := client.GetContent()
 	if err != nil {
 		t.Fatalf("expected no error, got: %v", err)
 	}
