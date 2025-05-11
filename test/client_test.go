@@ -23,8 +23,8 @@ func TestGetPlayerLoadout(t *testing.T) {
 	if len(loadout.Guns) == 0 {
 		t.Fatal("expected Guns not to be empty")
 	}
-	if len(loadout.Sprays) == 0 {
-		t.Fatal("expected Sprays not to be empty")
+	if len(loadout.ActiveExpressions) == 0 {
+		t.Fatal("expected active expressions not to be empty")
 	}
 
 	if loadout.Subject != client.Player.Uuid {
@@ -44,10 +44,10 @@ func TestSetPlayerLoadout(t *testing.T) {
 	}
 
 	loadoutDiff, err := client.SetPlayerLoadout(&valclient.SetPlayerLoadoutRequest{
-		Guns:      loadout.Guns,
-		Sprays:    loadout.Sprays,
-		Identity:  loadout.Identity,
-		Incognito: !loadout.Incognito,
+		Guns:              loadout.Guns,
+		ActiveExpressions: loadout.ActiveExpressions,
+		Identity:          loadout.Identity,
+		Incognito:         !loadout.Incognito,
 	})
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -58,10 +58,10 @@ func TestSetPlayerLoadout(t *testing.T) {
 	}
 
 	loadoutDiff, err = client.SetPlayerLoadout(&valclient.SetPlayerLoadoutRequest{
-		Guns:      loadout.Guns,
-		Sprays:    loadout.Sprays,
-		Identity:  loadout.Identity,
-		Incognito: loadout.Incognito,
+		Guns:              loadout.Guns,
+		ActiveExpressions: loadout.ActiveExpressions,
+		Identity:          loadout.Identity,
+		Incognito:         loadout.Incognito,
 	})
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)

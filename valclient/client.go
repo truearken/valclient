@@ -42,16 +42,16 @@ func NewClient() (*ValClient, error) {
 }
 
 type GetPlayerLoadoutRequest struct {
-	Subject   string    `json:"Subject"`
-	Version   int       `json:"Version"`
-	Guns      []*Gun    `json:"Guns"`
-	Sprays    []*Spray  `json:"Sprays"`
-	Identity  *Identity `json:"Identity"`
-	Incognito bool      `json:"Incognito"`
+	Subject           string               `json:"Subject"`
+	Version           int                  `json:"Version"`
+	Guns              []*Gun               `json:"Guns"`
+	ActiveExpressions []*ActiveExpressions `json:"ActiveExpressions"`
+	Identity          *Identity            `json:"Identity"`
+	Incognito         bool                 `json:"Incognito"`
 }
 
 func (c *ValClient) GetPlayerLoadout() (*GetPlayerLoadoutRequest, error) {
-	url := fmt.Sprintf("https://pd.%s.a.pvp.net/personalization/v2/players/%s/playerloadout", c.Shard, c.Player.Uuid)
+	url := fmt.Sprintf("https://pd.%s.a.pvp.net/personalization/v3/players/%s/playerloadout", c.Shard, c.Player.Uuid)
 	loadout := new(GetPlayerLoadoutRequest)
 
 	err := c.RunRequest(http.MethodGet, url, nil, loadout)
@@ -63,14 +63,14 @@ func (c *ValClient) GetPlayerLoadout() (*GetPlayerLoadoutRequest, error) {
 }
 
 type SetPlayerLoadoutRequest struct {
-	Guns      []*Gun    `json:"Guns"`
-	Sprays    []*Spray  `json:"Sprays"`
-	Identity  *Identity `json:"Identity"`
-	Incognito bool      `json:"Incognito"`
+	Guns              []*Gun               `json:"Guns"`
+	ActiveExpressions []*ActiveExpressions `json:"ActiveExpressions"`
+	Identity          *Identity            `json:"Identity"`
+	Incognito         bool                 `json:"Incognito"`
 }
 
 func (c *ValClient) SetPlayerLoadout(loadout *SetPlayerLoadoutRequest) (*GetPlayerLoadoutRequest, error) {
-	url := fmt.Sprintf("https://pd.%s.a.pvp.net/personalization/v2/players/%s/playerloadout", c.Shard, c.Player.Uuid)
+	url := fmt.Sprintf("https://pd.%s.a.pvp.net/personalization/v3/players/%s/playerloadout", c.Shard, c.Player.Uuid)
 	responseloadout := new(GetPlayerLoadoutRequest)
 
 	err := c.RunRequest(http.MethodPut, url, loadout, responseloadout)

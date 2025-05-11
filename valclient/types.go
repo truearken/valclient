@@ -68,9 +68,9 @@ type Gun struct {
 	Attachments     []any  `json:"Attachments"`
 }
 
-type Spray struct {
-	EquipSlotID string `json:"EquipSlotID"`
-	SprayID     string `json:"SprayID"`
+type ActiveExpressions struct {
+	TypeID  string `json:"TypeID"`
+	AssetID string `json:"AssetID"`
 }
 
 type Identity struct {
