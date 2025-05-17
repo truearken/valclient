@@ -527,3 +527,73 @@ func (c *ValClient) GetCompetitiveUpdates(startIndex, endIndex int, queue QueueI
 
 	return compUpdates, nil
 }
+
+type GetLeaderboardResponse struct {
+	Deployment string `json:"Deployment"`
+	QueueID    string `json:"QueueID"`
+	SeasonID   string `json:"SeasonID"`
+	Players    []struct {
+		PlayerCardID    string `json:"PlayerCardID"`
+		TitleID         string `json:"TitleID"`
+		IsBanned        bool   `json:"IsBanned"`
+		IsAnonymized    bool   `json:"IsAnonymized"`
+		Puuid           string `json:"puuid"`
+		GameName        string `json:"gameName"`
+		TagLine         string `json:"tagLine"`
+		LeaderboardRank int    `json:"leaderboardRank"`
+		RankedRating    int    `json:"rankedRating"`
+		NumberOfWins    int    `json:"numberOfWins"`
+		CompetitiveTier int    `json:"competitiveTier"`
+	} `json:"Players"`
+	TotalPlayers          int `json:"totalPlayers"`
+	ImmortalStartingPage  int `json:"immortalStartingPage"`
+	ImmortalStartingIndex int `json:"immortalStartingIndex"`
+	TopTierRRThreshold    int `json:"topTierRRThreshold"`
+	TierDetails           map[string]struct {
+		RankedRatingThreshold int `json:"rankedRatingThreshold"`
+		StartingPage          int `json:"startingPage"`
+		StartingIndex         int `json:"startingIndex"`
+	} `json:"tierDetails"`
+	StartIndex int    `json:"startIndex"`
+	Query      string `json:"query"`
+}
+
+/*
+seasonId is mandatory, others are optional. default values are:
+- startIndex: 0
+- size: 510 (amount of entries in the leaderboard to return)
+- query: (not passed, returns all players. otherwise a player name can be passed)
+*/
+func (c *ValClient) GetLeaderboard(shard Shard, startIndex int, seasonId string, size int, query string) (*GetLeaderboardResponse, error) {
+	if size == 0 {
+		size = 510
+	}
+	additionalParams := []string{
+		"{startIndex}", fmt.Sprint(startIndex),
+		"{seasonId}", seasonId,
+		"{size}", fmt.Sprint(size),
+	}
+
+	baseUrl := "https://pd.{shard}.a.pvp.net/mmr/v1/leaderboards/affinity/{shard}/queue/competitive/season/{seasonId}?startIndex={startIndex}&size={size}"
+
+	if query != "" {
+		baseUrl += "&query={query}"
+		additionalParams = append(additionalParams, []string{
+			"{query}", query,
+		}...)
+	}
+
+	// pretty hacky but whatever, it works
+	oldShard := c.Shard
+	c.Shard = shard
+	url := c.BuildUrl(baseUrl, additionalParams...)
+	c.Shard = oldShard
+
+	leaderboard := new(GetLeaderboardResponse)
+
+	if err := c.RunRequest(http.MethodGet, url, nil, leaderboard); err != nil {
+		return nil, err
+	}
+
+	return leaderboard, nil
+}

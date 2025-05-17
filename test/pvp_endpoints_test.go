@@ -197,3 +197,33 @@ func TestGetCompetitiveUpdates(t *testing.T) {
 		t.Fatalf("expected compUpdates not to be empty. make sure you have at least one competitive game played")
 	}
 }
+
+func TestGetLeaderboard(t *testing.T) {
+	client, err := valclient.NewClient()
+	if err != nil {
+		t.Fatalf("unable to create client: %v", err)
+	}
+
+	oldShard := client.Shard
+
+	v25act2 := "16118998-4705-5813-86dd-0292a2439d90"
+	playerName := "arkeN" // it's me !! :)
+
+	leaderbaord, err := client.GetLeaderboard(valclient.SHARD_EU, 0, v25act2, 0, playerName)
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+
+	if client.Shard != oldShard {
+		t.Fatalf("expected shard to remain the same")
+	}
+
+	if len(leaderbaord.Players) == 0 {
+		t.Fatalf("expected players not to be empty")
+	}
+
+	firstMatch := leaderbaord.Players[0].GameName
+	if firstMatch != playerName {
+		t.Fatalf("expected player to be arkeN, got: %s", firstMatch)
+	}
+}
