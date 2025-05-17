@@ -564,7 +564,7 @@ seasonId is mandatory, others are optional. default values are:
 - size: 510 (amount of entries in the leaderboard to return)
 - query: (not passed, returns all players. otherwise a player name can be passed)
 */
-func (c *ValClient) GetLeaderboard(shard Shard, startIndex int, seasonId string, size int, query string) (*GetLeaderboardResponse, error) {
+func (c *ValClient) GetLeaderboard(region Region, startIndex int, seasonId string, size int, query string) (*GetLeaderboardResponse, error) {
 	if size == 0 {
 		size = 510
 	}
@@ -574,7 +574,7 @@ func (c *ValClient) GetLeaderboard(shard Shard, startIndex int, seasonId string,
 		"{size}", fmt.Sprint(size),
 	}
 
-	baseUrl := "https://pd.{shard}.a.pvp.net/mmr/v1/leaderboards/affinity/{shard}/queue/competitive/season/{seasonId}?startIndex={startIndex}&size={size}"
+	baseUrl := "https://pd.{shard}.a.pvp.net/mmr/v1/leaderboards/affinity/{region}/queue/competitive/season/{seasonId}?startIndex={startIndex}&size={size}"
 
 	if query != "" {
 		baseUrl += "&query={query}"
@@ -584,9 +584,11 @@ func (c *ValClient) GetLeaderboard(shard Shard, startIndex int, seasonId string,
 	}
 
 	// pretty hacky but whatever, it works
-	oldShard := c.Shard
-	c.Shard = shard
+	oldRegion, oldShard := c.Region, c.Shard
+	c.Region = region
+	c.Shard = ShardForRegion[region]
 	url := c.BuildUrl(baseUrl, additionalParams...)
+	c.Region = oldRegion
 	c.Shard = oldShard
 
 	leaderboard := new(GetLeaderboardResponse)
@@ -596,4 +598,166 @@ func (c *ValClient) GetLeaderboard(shard Shard, startIndex int, seasonId string,
 	}
 
 	return leaderboard, nil
+}
+
+type GetConfigResponse struct {
+	LastApplication string `json:"LastApplication"`
+	Collapsed       struct {
+		AresMocEntitlement                          string `json:"ARES_MOC_ENTITLEMENT"`
+		ClientIconsEnabled                          string `json:"CLIENT.ICONS.ENABLED"`
+		ClientLeaderboardsEnabled                   string `json:"CLIENT_LEADERBOARDS_ENABLED"`
+		GameAllowConsole                            string `json:"GAME_ALLOW_CONSOLE"`
+		GameAllowDeveloperMenu                      string `json:"GAME_ALLOW_DEVELOPER_MENU"`
+		GameDisabledDeathcam                        string `json:"GAME_DISABLED_DEATHCAM"`
+		GameDisabledSkinsWeapons                    string `json:"GAME_DISABLED_SKINS_WEAPONS"`
+		GamePerfreportingEnabled                    string `json:"GAME_PERFREPORTING_ENABLED"`
+		GameRemoteMoveInterpEnabled                 string `json:"GAME_REMOTE_MOVE_INTERP_ENABLED"`
+		GameRoamingSettingsEnabled                  string `json:"GAME_ROAMINGSETTINGS_ENABLED"`
+		GameRoamingSettingsKey                      string `json:"GAME_ROAMINGSETTINGS_KEY"`
+		GameRoamingSettingsStorageUrl               string `json:"GAME_ROAMINGSETTINGS_STORAGEURL"`
+		MapPreloadingEnabled                        string `json:"MAP_PRELOADING_ENABLED"`
+		NamecheckPlatformRegion                     string `json:"NAMECHECK_PLATFORM_REGION"`
+		NamecheckPlatformUrl                        string `json:"NAMECHECK_PLATFORM_URL"`
+		RosterRealm                                 string `json:"ROSTER_REALM"`
+		SecurityWatermarkEnabled                    string `json:"SECURITY_WATERMARK_ENABLED"`
+		SecurityWatermarkMaxOpacity                 string `json:"SECURITY_WATERMARK_MAX_OPACITY"`
+		SecurityWatermarkMinOpacity                 string `json:"SECURITY_WATERMARK_MIN_OPACITY"`
+		SecurityWatermarkTilingFactor               string `json:"SECURITY_WATERMARK_TILING_FACTOR"`
+		ServiceUrlAccountXp                         string `json:"SERVICEURL_ACCOUNT_XP"`
+		ServiceUrlAggStats                          string `json:"SERVICEURL_AGGSTATS"`
+		ServiceUrlAvs                               string `json:"SERVICEURL_AVS"`
+		ServiceUrlContent                           string `json:"SERVICEURL_CONTENT"`
+		ServiceUrlContracts                         string `json:"SERVICEURL_CONTRACTS"`
+		ServiceUrlContractDefinitions               string `json:"SERVICEURL_CONTRACT_DEFINITIONS"`
+		ServiceUrlCoreGame                          string `json:"SERVICEURL_COREGAME"`
+		ServiceUrlDailyTicket                       string `json:"SERVICEURL_DAILY_TICKET"`
+		ServiceUrlFavorites                         string `json:"SERVICEURL_FAVORITES"`
+		ServiceUrlGalbsQuery                        string `json:"SERVICEURL_GALBS_QUERY"`
+		ServiceUrlLatency                           string `json:"SERVICEURL_LATENCY"`
+		ServiceUrlLoginQueue                        string `json:"SERVICEURL_LOGINQUEUE"`
+		ServiceUrlMassRewards                       string `json:"SERVICEURL_MASS_REWARDS"`
+		ServiceUrlMatchDetails                      string `json:"SERVICEURL_MATCHDETAILS"`
+		ServiceUrlMatchHistory                      string `json:"SERVICEURL_MATCHHISTORY"`
+		ServiceUrlMatchmaking                       string `json:"SERVICEURL_MATCHMAKING"`
+		ServiceUrlMmr                               string `json:"SERVICEURL_MMR"`
+		ServiceUrlName                              string `json:"SERVICEURL_NAME"`
+		ServiceUrlParty                             string `json:"SERVICEURL_PARTY"`
+		ServiceUrlPatchNotes                        string `json:"SERVICEURL_PATCHNOTES"`
+		ServiceUrlPersonalization                   string `json:"SERVICEURL_PERSONALIZATION"`
+		ServiceUrlPlayerFeedback                    string `json:"SERVICEURL_PLAYERFEEDBACK"`
+		ServiceUrlPreGame                           string `json:"SERVICEURL_PREGAME"`
+		ServiceUrlPremier                           string `json:"SERVICEURL_PREMIER"`
+		ServiceUrlProgression                       string `json:"SERVICEURL_PROGRESSION"`
+		ServiceUrlPurchaseMerchant                  string `json:"SERVICEURL_PURCHASEMERCHANT"`
+		ServiceUrlReplayCatalog                     string `json:"SERVICEURL_REPLAY_CATALOG"`
+		ServiceUrlRestrictions                      string `json:"SERVICEURL_RESTRICTIONS"`
+		ServiceUrlSession                           string `json:"SERVICEURL_SESSION"`
+		ServiceUrlStore                             string `json:"SERVICEURL_STORE"`
+		ServiceUrlTournaments                       string `json:"SERVICEURL_TOURNAMENTS"`
+		ServiceTickerMessage                        string `json:"SERVICE_TICKER_MESSAGE"`
+		ServiceTickerMessageDeDe                    string `json:"SERVICE_TICKER_MESSAGE.de-DE"`
+		ServiceTickerMessageEsMx                    string `json:"SERVICE_TICKER_MESSAGE.es-MX"`
+		ServiceTickerMessageFrFr                    string `json:"SERVICE_TICKER_MESSAGE.fr-FR"`
+		ServiceTickerMessageItIt                    string `json:"SERVICE_TICKER_MESSAGE.it-IT"`
+		ServiceTickerMessagePlPl                    string `json:"SERVICE_TICKER_MESSAGE.pl-PL"`
+		ServiceTickerMessagePtBr                    string `json:"SERVICE_TICKER_MESSAGE.pt-BR"`
+		ServiceTickerMessageRuRu                    string `json:"SERVICE_TICKER_MESSAGE.ru-RU"`
+		ServiceTickerMessageTrTr                    string `json:"SERVICE_TICKER_MESSAGE.tr-TR"`
+		ServiceTickerSeverity                       string `json:"SERVICE_TICKER_SEVERITY"`
+		StoreScreenOfferRefreshMaxDelayMilliseconds string `json:"STORESCREEN_OFFERREFRESH_MAXDELAY_MILLISECONDS"`
+		AvsEnabled                                  string `json:"avs.enabled"`
+		CapLocation                                 string `json:"cap.location"`
+		CharacterSelectDebugWidgetsHide             string `json:"characterselect.debugwidgets.hide"`
+		ChatMutedWordsEnabled                       string `json:"chat.mutedwords.enabled"`
+		ChatV3Enabled                               string `json:"chat.v3.enabled"`
+		CollectionCharactersEnabled                 string `json:"collection.characters.enabled"`
+		CompetitiveSeasonOffsetEndTime              string `json:"competitiveSeasonOffsetEndTime"`
+		ConfigClientTelemetrySampleRate             string `json:"config.client.telemetry.samplerate"`
+		ContentFilterEnabled                        string `json:"content.filter.enabled"`
+		ContentMapsDisabled                         string `json:"content.maps.disabled"`
+		EogWip                                      string `json:"eog.wip"`
+		FriendsEnabled                              string `json:"friends.enabled"`
+		GameUmgChatEnabled                          string `json:"game.umgchat.enabled"`
+		HomescreenFeaturedQueues                    string `json:"homescreen.featuredQueues"`
+		HomescreenPatchNotesBaseUrl                 string `json:"homescreen.patchnotes.baseURL"`
+		HomescreenPromoEnabled                      string `json:"homescreen.promo.enabled"`
+		HomescreenPromoKey                          string `json:"homescreen.promo.key"`
+		HomescreenWebTileBaseUrl                    string `json:"homescreen.webtile.baseURL"`
+		LoginQueueRegion                            string `json:"loginqueue.region"`
+		MainMenuBarCollectionsEnabled               string `json:"mainmenubar.collections.enabled"`
+		MainMenuBarDebugEnabled                     string `json:"mainmenubar.debug.enabled"`
+		MainMenuBarProfileEnabled                   string `json:"mainmenubar.profile.enabled"`
+		MainMenuBarProgressionEnabled               string `json:"mainmenubar.progression.enabled"`
+		MainMenuBarShootingRangeEnabled             string `json:"mainmenubar.shootingrange.enabled"`
+		MainMenuBarStoreEnabled                     string `json:"mainmenubar.store.enabled"`
+		MatchDetailsDelay                           string `json:"match.details.delay"`
+		NotificationsEnabled                        string `json:"notifications.enabled"`
+		PartiesAutoBalanceEnabled                   string `json:"parties.auto.balance.enabled"`
+		PartyObserversEnabled                       string `json:"party.observers.enabled"`
+		PartyInvitesEnabled                         string `json:"partyinvites.enabled"`
+		PatchAvailabilityEnabled                    string `json:"patchavailability.enabled"`
+		PersonalizationEquipAnyLevelEnabled         string `json:"personalization.equipAnyLevel.enabled"`
+		PersonalizationUseWidePlayerIdentityV2      string `json:"personalization.useWidePlayerIdentityV2"`
+		PingUpdateInterval                          string `json:"ping.update.interval"`
+		PingUseGamePodsFromParties                  string `json:"ping.useGamePodsFromParties"`
+		PlatformFaultedLevel                        string `json:"platformFaulted.level"`
+		PlayerFeedbackToolAccessUrl                 string `json:"playerfeedbacktool.accessurl"`
+		PlayerFeedbackToolLocale                    string `json:"playerfeedbacktool.locale"`
+		PlayerFeedbackToolShard                     string `json:"playerfeedbacktool.shard"`
+		PlayerFeedbackToolShow                      string `json:"playerfeedbacktool.show"`
+		PlayerFeedbackToolSurveyRequestRateFloat    string `json:"playerfeedbacktool.survey_request_rate_float"`
+		PlayScreenPartyWidgetEnabled                string `json:"playscreen.partywidget.enabled"`
+		PlayScreenPartyWidgetMatchmakingMaxSize     string `json:"playscreen.partywidget.matchmaking.maxsize"`
+		PlayScreenPremierEnabled                    string `json:"playscreen.premier.enabled"`
+		PremierConferencesFetchEnabled              string `json:"premier.conferences.fetch.enabled"`
+		PremierLeaderboardTabEnabled                string `json:"premier.leaderboardTab.enabled"`
+		PremierMatchHistoryTabEnabled               string `json:"premier.matchHistoryTab.enabled"`
+		PremierPlayScreenFlowEnabled                string `json:"premier.playscreenflow.enabled"`
+		PremierRosterEligibilityCheckEnabled        string `json:"premier.rosterEligibilityCheck.enabled"`
+		PremierSeasonsActiveSeasonEnabled           string `json:"premier.seasons.activeseason.enabled"`
+		PremierSeasonsFetchEnabled                  string `json:"premier.seasons.fetch.enabled"`
+		QueueStatusEnabled                          string `json:"queue.status.enabled"`
+		RChatInGameEnabled                          string `json:"rchat.ingame.enabled"`
+		ReporterFeedbackFetchEnabled                string `json:"reporterfeedback.fetch.enabled"`
+		ReporterFeedbackNotificationsEnabled        string `json:"reporterfeedback.notifications.enabled"`
+		RestrictionsV2FetchEnabled                  string `json:"restrictions.v2.fetch.enabled"`
+		RestrictionsV2WarningsEnabled               string `json:"restrictions.v2.warnings.enabled"`
+		RiotWarningFetchEnabled                     string `json:"riotwarning.fetch.enabled"`
+		RiotWarningNotificationsEnabled             string `json:"riotwarning.notifications.enabled"`
+		RNetUseAuthenticatedVoice                   string `json:"rnet.useAuthenticatedVoice"`
+		RussiaVoiceEnabled                          string `json:"russia.voice.enabled"`
+		SettingsLiveDiagnosticsAllowedPlayers       string `json:"settings.livediagnostics.allowedplayers"`
+		ShootingTestEnabled                         string `json:"shootingtest.enabled"`
+		SkillRatingEnabled                          string `json:"skillrating.enabled"`
+		SkillRatingInGameEnabled                    string `json:"skillrating.inGame.enabled"`
+		SkillRatingPreGameEnabled                   string `json:"skillrating.preGame.enabled"`
+		SocialPanelV6Enabled                        string `json:"social.panel.v6.enabled"`
+		SocialViewControllerEnabled                 string `json:"socialviewcontroller.enabled"`
+		SocialViewControllerV2Enabled               string `json:"socialviewcontroller.v2.enabled"`
+		StoreIsXgpDisabled                          string `json:"store.isXgpDisabled"`
+		StoreUseCurrencyInventoryModels             string `json:"store.use_currency_inventory_models"`
+		StoreUsePlatformBundleDiscountedPrices      string `json:"store.use_platform_bundle_discounted_prices"`
+		TelemetryRtpEventEndpoint                   string `json:"telemetry.rtp.eventendpoint"`
+		TelemetryRtpRfc190Scope                     string `json:"telemetry.rtp.rfc190scope"`
+		TempVoiceAllowMuting                        string `json:"temp.voice.allowmuting"`
+		TournamentsEnabled                          string `json:"tournaments.enabled"`
+		TournamentsPreGameEnabled                   string `json:"tournaments.pregame.enabled"`
+		VanguardAccessUrl                           string `json:"vanguard.accessurl"`
+		VanguardNetRequired                         string `json:"vanguard.netrequired"`
+		VoiceClutchMuteEnabled                      string `json:"voice.clutchmute.enabled"`
+		VoiceClutchMutePromptEnabled                string `json:"voice.clutchmute.prompt.enabled"`
+		VoiceProvider                               string `json:"voice.provider"`
+		WhisperEnabled                              string `json:"whisper.enabled"`
+	} `json:"Collapsed"`
+}
+
+func (c *ValClient) GetConfig() (*GetConfigResponse, error) {
+	url := c.BuildUrl("https://shared.{shard}.a.pvp.net/v1/config/{region}")
+	config := new(GetConfigResponse)
+
+	if err := c.RunRequest(http.MethodGet, url, nil, config); err != nil {
+		return nil, err
+	}
+
+	return config, nil
 }

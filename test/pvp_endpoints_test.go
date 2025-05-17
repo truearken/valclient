@@ -204,18 +204,21 @@ func TestGetLeaderboard(t *testing.T) {
 		t.Fatalf("unable to create client: %v", err)
 	}
 
-	oldShard := client.Shard
+	oldRegion, oldShard := client.Region, client.Shard
 
 	v25act2 := "16118998-4705-5813-86dd-0292a2439d90"
 	playerName := "arkeN" // it's me !! :)
 
-	leaderbaord, err := client.GetLeaderboard(valclient.SHARD_EU, 0, v25act2, 0, playerName)
+	leaderbaord, err := client.GetLeaderboard(valclient.REGION_EU, 0, v25act2, 0, playerName)
 	if err != nil {
 		t.Fatalf("expected no error, got: %v", err)
 	}
 
 	if client.Shard != oldShard {
 		t.Fatalf("expected shard to remain the same")
+	}
+	if client.Region != oldRegion {
+		t.Fatalf("expected region to remain the same")
 	}
 
 	if len(leaderbaord.Players) == 0 {
@@ -225,5 +228,21 @@ func TestGetLeaderboard(t *testing.T) {
 	firstMatch := leaderbaord.Players[0].GameName
 	if firstMatch != playerName {
 		t.Fatalf("expected player to be arkeN, got: %s", firstMatch)
+	}
+}
+
+func TestGetConfig(t *testing.T) {
+	client, err := valclient.NewClient()
+	if err != nil {
+		t.Fatalf("unable to create client: %v", err)
+	}
+
+	config, err := client.GetConfig()
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+
+	if config.Collapsed.PingUpdateInterval == "" {
+		t.Fatalf("expected config not to be empty")
 	}
 }
