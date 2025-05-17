@@ -162,6 +162,7 @@ const (
 type QueueID string
 
 const (
+	QUEUE_ALL             QueueID = ""
 	QUEUE_COMPETITIVE     QueueID = "competitive"
 	QUEUE_DEATHMATCH      QueueID = "deathmatch"
 	QUEUE_TEAM_DEATHMATCH QueueID = "hurm"

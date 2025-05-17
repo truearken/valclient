@@ -474,3 +474,56 @@ func (c *ValClient) GetMatchDetails(matchId string) (*GetMatchDetailsResponse, e
 
 	return matchDetails, nil
 }
+
+type GetCompetitiveUpdatesResponse struct {
+	Version int    `json:"Version"`
+	Subject string `json:"Subject"`
+	Matches []struct {
+		MatchID                      string              `json:"MatchID"`
+		MapID                        string              `json:"MapID"`
+		SeasonID                     string              `json:"SeasonID"`
+		MatchStartTime               int                 `json:"MatchStartTime"`
+		TierAfterUpdate              int                 `json:"TierAfterUpdate"`
+		TierBeforeUpdate             int                 `json:"TierBeforeUpdate"`
+		RankedRatingAfterUpdate      int                 `json:"RankedRatingAfterUpdate"`
+		RankedRatingBeforeUpdate     int                 `json:"RankedRatingBeforeUpdate"`
+		RankedRatingEarned           int                 `json:"RankedRatingEarned"`
+		RankedRatingPerformanceBonus int                 `json:"RankedRatingPerformanceBonus"`
+		CompetitiveMovement          CompetitiveMovement `json:"CompetitiveMovement"`
+		AFKPenalty                   int                 `json:"AFKPenalty"`
+	} `json:"Matches"`
+}
+
+/*
+All parameters are optional, default values are
+- startIndex: 0
+- endIndex: 20
+- queue: (not passed, results in all queues)
+*/
+func (c *ValClient) GetCompetitiveUpdates(startIndex, endIndex int, queue QueueID) (*GetCompetitiveUpdatesResponse, error) {
+	if endIndex == 0 {
+		endIndex = 20
+	}
+	additionalParams := []string{
+		"{startIndex}", fmt.Sprint(startIndex),
+		"{endIndex}", fmt.Sprint(endIndex),
+	}
+
+	baseUrl := "https://pd.{shard}.a.pvp.net/mmr/v1/players/{puuid}/competitiveupdates?startIndex={startIndex}&endIndex={endIndex}&queue={queue}"
+
+	if queue != "" {
+		baseUrl += "&queue={queue}"
+		additionalParams = append(additionalParams, []string{
+			"{queue}", string(queue),
+		}...)
+	}
+
+	url := c.BuildUrl(baseUrl, additionalParams...)
+	compUpdates := new(GetCompetitiveUpdatesResponse)
+
+	if err := c.RunRequest(http.MethodGet, url, nil, compUpdates); err != nil {
+		return nil, err
+	}
+
+	return compUpdates, nil
+}

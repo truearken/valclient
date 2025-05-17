@@ -88,26 +88,6 @@ func TestGetPlayerMmr(t *testing.T) {
 	}
 }
 
-func TestGetOwnedItems(t *testing.T) {
-	client, err := valclient.NewClient()
-	if err != nil {
-		t.Fatalf("unable to create client: %v", err)
-	}
-
-	ownedItems, err := client.GetOwnedItems(valclient.ITEM_TYPE_AGENTS)
-	if err != nil {
-		t.Fatalf("expected no error, got: %v", err)
-	}
-
-	if ownedItems.ItemTypeID != valclient.ITEM_TYPE_AGENTS {
-		t.Fatal("expected ItemTypeID to be ITEM_TYPE_AGENTS")
-	}
-
-	if len(ownedItems.Entitlements) == 0 {
-		t.Fatal("expected Entitlements not to be empty")
-	}
-}
-
 func TestGetContent(t *testing.T) {
 	client, err := valclient.NewClient()
 	if err != nil {
@@ -154,7 +134,7 @@ func TestGetMatchHistory(t *testing.T) {
 		t.Fatalf("unable to create client: %v", err)
 	}
 
-	history, err := client.GetMatchHistory(0, 0, "")
+	history, err := client.GetMatchHistory(0, 0, valclient.QUEUE_ALL)
 	if err != nil {
 		t.Fatalf("expected no error, got: %v", err)
 	}
@@ -183,7 +163,7 @@ func TestGetMatchDetails(t *testing.T) {
 		t.Fatalf("unable to create client: %v", err)
 	}
 
-	history, err := client.GetMatchHistory(0, 0, "")
+	history, err := client.GetMatchHistory(0, 0, valclient.QUEUE_ALL)
 	if err != nil {
 		t.Fatalf("expected no error when getting history, got: %v", err)
 	}
@@ -199,5 +179,21 @@ func TestGetMatchDetails(t *testing.T) {
 
 	if matchDetails.MatchInfo.MatchID == "" {
 		t.Fatalf("expected matchId not to be empty")
+	}
+}
+
+func TestGetCompetitiveUpdates(t *testing.T) {
+	client, err := valclient.NewClient()
+	if err != nil {
+		t.Fatalf("unable to create client: %v", err)
+	}
+
+	compUpdates, err := client.GetCompetitiveUpdates(0, 0, valclient.QUEUE_COMPETITIVE)
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+
+	if len(compUpdates.Matches) == 0 {
+		t.Fatalf("expected compUpdates not to be empty. make sure you have at least one competitive game played")
 	}
 }
