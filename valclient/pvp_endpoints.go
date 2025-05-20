@@ -761,3 +761,21 @@ func (c *ValClient) GetConfig() (*GetConfigResponse, error) {
 
 	return config, nil
 }
+
+type GetNamesResponse []*struct {
+	DisplayName string `json:"DisplayName"`
+	Subject     string `json:"Subject"`
+	GameName    string `json:"GameName"`
+	TagLine     string `json:"TagLine"`
+}
+
+func (c *ValClient) GetNames(puuids []string) (GetNamesResponse, error) {
+	url := c.BuildUrl("https://pd.{shard}.a.pvp.net/name-service/v2/players")
+	names := new(GetNamesResponse)
+
+	if err := c.RunRequest(http.MethodPut, url, puuids, names); err != nil {
+		return nil, err
+	}
+
+	return *names, nil
+}

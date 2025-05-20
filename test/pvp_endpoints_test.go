@@ -1,17 +1,23 @@
 package test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/truearken/valclient/valclient"
 )
 
-func TestGetPlayerLoadout(t *testing.T) {
-	client, err := valclient.NewClient()
-	if err != nil {
-		t.Fatalf("unable to create client: %v", err)
-	}
+var client *valclient.ValClient
 
+func init() {
+	c, err := valclient.NewClient()
+	if err != nil {
+		panic("unable to create client: " + err.Error())
+	}
+	client = c
+}
+
+func TestGetPlayerLoadout(t *testing.T) {
 	loadout, err := client.GetPlayerLoadout()
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -33,11 +39,6 @@ func TestGetPlayerLoadout(t *testing.T) {
 }
 
 func TestSetPlayerLoadout(t *testing.T) {
-	client, err := valclient.NewClient()
-	if err != nil {
-		t.Fatalf("unable to create client: %v", err)
-	}
-
 	loadout, err := client.GetPlayerLoadout()
 	if err != nil {
 		t.Fatalf("expected no error, got: %v", err)
@@ -73,11 +74,6 @@ func TestSetPlayerLoadout(t *testing.T) {
 }
 
 func TestGetPlayerMmr(t *testing.T) {
-	client, err := valclient.NewClient()
-	if err != nil {
-		t.Fatalf("unable to create client: %v", err)
-	}
-
 	playerMmr, err := client.GetPlayerMmr()
 	if err != nil {
 		t.Fatalf("expected no error, got: %v", err)
@@ -89,11 +85,6 @@ func TestGetPlayerMmr(t *testing.T) {
 }
 
 func TestGetContent(t *testing.T) {
-	client, err := valclient.NewClient()
-	if err != nil {
-		t.Fatalf("unable to create client: %v", err)
-	}
-
 	content, err := client.GetContent()
 	if err != nil {
 		t.Fatalf("expected no error, got: %v", err)
@@ -109,11 +100,6 @@ func TestGetContent(t *testing.T) {
 }
 
 func TestGetAccountXp(t *testing.T) {
-	client, err := valclient.NewClient()
-	if err != nil {
-		t.Fatalf("unable to create client: %v", err)
-	}
-
 	accountXp, err := client.GetAccountXp()
 	if err != nil {
 		t.Fatalf("expected no error, got: %v", err)
@@ -129,11 +115,6 @@ func TestGetAccountXp(t *testing.T) {
 }
 
 func TestGetMatchHistory(t *testing.T) {
-	client, err := valclient.NewClient()
-	if err != nil {
-		t.Fatalf("unable to create client: %v", err)
-	}
-
 	history, err := client.GetMatchHistory(0, 0, valclient.QUEUE_ALL)
 	if err != nil {
 		t.Fatalf("expected no error, got: %v", err)
@@ -158,11 +139,6 @@ func TestGetMatchHistory(t *testing.T) {
 }
 
 func TestGetMatchDetails(t *testing.T) {
-	client, err := valclient.NewClient()
-	if err != nil {
-		t.Fatalf("unable to create client: %v", err)
-	}
-
 	history, err := client.GetMatchHistory(0, 0, valclient.QUEUE_ALL)
 	if err != nil {
 		t.Fatalf("expected no error when getting history, got: %v", err)
@@ -183,11 +159,6 @@ func TestGetMatchDetails(t *testing.T) {
 }
 
 func TestGetCompetitiveUpdates(t *testing.T) {
-	client, err := valclient.NewClient()
-	if err != nil {
-		t.Fatalf("unable to create client: %v", err)
-	}
-
 	compUpdates, err := client.GetCompetitiveUpdates(0, 0, valclient.QUEUE_COMPETITIVE)
 	if err != nil {
 		t.Fatalf("expected no error, got: %v", err)
@@ -199,11 +170,6 @@ func TestGetCompetitiveUpdates(t *testing.T) {
 }
 
 func TestGetLeaderboard(t *testing.T) {
-	client, err := valclient.NewClient()
-	if err != nil {
-		t.Fatalf("unable to create client: %v", err)
-	}
-
 	oldRegion, oldShard := client.Region, client.Shard
 
 	v25act2 := "16118998-4705-5813-86dd-0292a2439d90"
@@ -232,11 +198,6 @@ func TestGetLeaderboard(t *testing.T) {
 }
 
 func TestGetConfig(t *testing.T) {
-	client, err := valclient.NewClient()
-	if err != nil {
-		t.Fatalf("unable to create client: %v", err)
-	}
-
 	config, err := client.GetConfig()
 	if err != nil {
 		t.Fatalf("expected no error, got: %v", err)
@@ -244,5 +205,18 @@ func TestGetConfig(t *testing.T) {
 
 	if config.Collapsed.PingUpdateInterval == "" {
 		t.Fatalf("expected config not to be empty")
+	}
+}
+
+func TestGetNames(t *testing.T) {
+	uuid := "09032ee1-7cd6-5583-b651-c6ffa8cb8acc"
+
+	names, err := client.GetNames([]string{uuid})
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+
+	if strings.Contains(names[0].DisplayName, "arkeN") {
+		t.Fatalf("expected name to contain 'arkeN'")
 	}
 }
