@@ -177,6 +177,20 @@ const (
 	QUEUE_UNRATED         QueueID = "unrated"
 )
 
+type CharacterSelectionState string
+
+const (
+	CharacterSelectionStateEmpty    CharacterSelectionState = ""
+	CharacterSelectionStateSelected CharacterSelectionState = "selected"
+	CharacterSelectionStateLocked   CharacterSelectionState = "locked"
+)
+
+type PregamePlayerState string
+
+const (
+	PregamePlayerStateJoined PregamePlayerState = "joined"
+)
+
 type Gun struct {
 	ID              string `json:"ID"`
 	CharmInstanceID string `json:"CharmInstanceID,omitempty"`
