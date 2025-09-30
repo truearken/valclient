@@ -54,6 +54,8 @@ func NewClient() (*ValClient, error) {
 	}, nil
 }
 
+var retried = false
+
 func (c *ValClient) RunRequest(method, url string, in any, out any) error {
 	body := new(bytes.Buffer)
 	if in != nil {
@@ -85,6 +87,15 @@ func (c *ValClient) RunRequest(method, url string, in any, out any) error {
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		if !retried {
+			c, err = NewClient()
+			if err != nil {
+				return err
+			}
+			if err := c.RunRequest(method, url, in, out); err != nil {
+				return errors.New("Is VALORANT running? error occurred while running local request: " + string(bytes))
+			}
+		}
 		return errors.New("Is VALORANT running? error occurred while running local request: " + string(bytes))
 	}
 
