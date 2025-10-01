@@ -13,12 +13,20 @@ import (
 	"strings"
 )
 
+type ValClientPlayer struct {
+	Uuid string
+}
+
+type ValClientLocal struct {
+	Port     string
+	Password string
+}
+
 type ValClient struct {
 	Shard  Shard
 	Region Region
-	Player *struct {
-		Uuid string
-	}
+	Player *ValClientPlayer
+	Local  *ValClientLocal
 	Header http.Header
 }
 
@@ -28,7 +36,14 @@ func NewClient() (*ValClient, error) {
 		return nil, err
 	}
 
-	authResp, err := authenticate(lockfile.Port, lockfile.Password)
+	client := &ValClient{
+		Local: &ValClientLocal{
+			Port:     lockfile.Port,
+			Password: lockfile.Password,
+		},
+	}
+
+	authResp, err := client.authenticate()
 	if err != nil {
 		return nil, err
 	}
@@ -44,14 +59,14 @@ func NewClient() (*ValClient, error) {
 	header.Add("X-Riot-ClientPlatform", CLIENT_PLATFORM_B64)
 	header.Add("X-Riot-ClientVersion", logfile.ClientVersion)
 
-	return &ValClient{
-		Region: logfile.Region,
-		Shard:  logfile.Shard,
-		Header: header,
-		Player: &struct{ Uuid string }{
-			Uuid: authResp.Subject,
-		},
-	}, nil
+	client.Header = header
+	client.Shard = logfile.Shard
+	client.Region = logfile.Region
+	client.Player = &ValClientPlayer{
+		Uuid: authResp.Subject,
+	}
+
+	return client, nil
 }
 
 var retried = false
@@ -123,27 +138,39 @@ type AuthenticateResponse struct {
 	Token       string `json:"token"`
 }
 
-func authenticate(port, password string) (*AuthenticateResponse, error) {
+func (c *ValClient) authenticate() (*AuthenticateResponse, error) {
 	authResp := new(AuthenticateResponse)
-	if err := runLocalRequest(port, password, "/entitlements/v1/token", authResp); err != nil {
+	if err := c.RunLocalRequest(http.MethodGet, "/entitlements/v1/token", nil, authResp); err != nil {
 		return nil, err
 	}
 
 	return authResp, nil
 }
 
-func runLocalRequest(port, password, endpoint string, out any) error {
+func (c *ValClient) RunLocalRequest(method, endpoint string, in any, out any) error {
 	client := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		},
 	}
 
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://127.0.0.1:%s%s", port, endpoint), nil)
+	body := new(bytes.Buffer)
+	if in != nil {
+		bytes, err := json.Marshal(in)
+		if err != nil {
+			return err
+		}
+		_, err = body.Write(bytes)
+		if err != nil {
+			return err
+		}
+	}
+
+	req, err := http.NewRequest(method, fmt.Sprintf("https://127.0.0.1:%s%s", c.Local.Port, endpoint), body)
 	if err != nil {
 		return err
 	}
-	req.SetBasicAuth("riot", password)
+	req.SetBasicAuth("riot", c.Local.Password)
 
 	resp, err := client.Do(req)
 	if err != nil {

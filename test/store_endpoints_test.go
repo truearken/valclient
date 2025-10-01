@@ -7,11 +7,6 @@ import (
 )
 
 func TestGetOwnedItems(t *testing.T) {
-	client, err := valclient.NewClient()
-	if err != nil {
-		t.Fatalf("unable to create client: %v", err)
-	}
-
 	ownedItems, err := client.GetOwnedItems(valclient.ITEM_TYPE_AGENTS)
 	if err != nil {
 		t.Fatalf("expected no error, got: %v", err)
