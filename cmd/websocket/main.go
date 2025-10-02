@@ -46,7 +46,7 @@ func main() {
 		panic(err)
 	}
 
-	events := make(chan valclient.LocalWebsocketEventData)
+	events := make(chan *valclient.LocalWebsocketApiEvent)
 	go func() {
 		if err := ws.Read(events); err != nil {
 			panic(err)
@@ -54,7 +54,7 @@ func main() {
 	}()
 
 	for event := range events {
-		dataBytes, err := json.Marshal(event.Data)
+		dataBytes, err := json.Marshal(event.Payload.Data)
 		if err != nil {
 			panic(err)
 		}
