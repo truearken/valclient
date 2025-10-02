@@ -97,7 +97,7 @@ func (lws *LocalWebsocket) Read(events chan<- *LocalWebsocketApiEvent) error {
 
 		var opCode int
 		var event string
-		var eventData *LocalWebsocketEventData
+		eventData := new(LocalWebsocketEventData)
 		if err := json.Unmarshal(rawArr[0], &opCode); err != nil {
 			return err
 		}

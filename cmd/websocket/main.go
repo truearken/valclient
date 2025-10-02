@@ -59,8 +59,8 @@ func main() {
 			panic(err)
 		}
 
-		var root Root
-		if err := json.Unmarshal(dataBytes, &root); err != nil {
+		root := new(Root)
+		if err := json.Unmarshal(dataBytes, root); err != nil {
 			log.Fatal("Failed to unmarshal root JSON:", err)
 		}
 
@@ -78,8 +78,8 @@ func main() {
 			log.Fatal("Failed to decode base64:", err)
 		}
 
-		var privateData PrivateData
-		if err := json.Unmarshal(decodedPrivate, &privateData); err != nil {
+		privateData := new(PrivateData)
+		if err := json.Unmarshal(decodedPrivate, privateData); err != nil {
 			log.Fatal("Failed to unmarshal private JSON:", err)
 		}
 
