@@ -17,6 +17,20 @@ func init() {
 	client = c
 }
 
+func TestRetryToken(t *testing.T) {
+	// call some request
+	if _, err := client.GetPlayerLoadout(); err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	client.Header.Set("Authorization", "")
+
+	// call some request without headers
+	if _, err := client.GetPlayerLoadout(); err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+}
+
 func TestGetPlayerLoadout(t *testing.T) {
 	loadout, err := client.GetPlayerLoadout()
 	if err != nil {

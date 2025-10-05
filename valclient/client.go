@@ -69,8 +69,6 @@ func NewClient() (*ValClient, error) {
 	return client, nil
 }
 
-var retried = false
-
 func (c *ValClient) RunRequest(method, url string, in any, out any) error {
 	body := new(bytes.Buffer)
 	if in != nil {
@@ -96,25 +94,27 @@ func (c *ValClient) RunRequest(method, url string, in any, out any) error {
 	}
 	defer resp.Body.Close()
 
-	bytes, err := io.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		if !retried {
-			c, err = NewClient()
-			if err != nil {
-				return err
-			}
-			if err := c.RunRequest(method, url, in, out); err != nil {
-				return errors.New("Is VALORANT running? error occurred while running local request: " + string(bytes))
-			}
+	if resp.StatusCode == http.StatusBadRequest && bytes.Contains(bodyBytes, []byte(`"errorCode": "BAD_CLAIMS"`)) {
+		authResp, err := c.authenticate()
+		if err != nil {
+			return err
 		}
-		return errors.New("Is VALORANT running? error occurred while running local request: " + string(bytes))
+
+		c.Header.Set("Authorization", fmt.Sprintf("Bearer %s", authResp.AccessToken))
+
+		return c.RunRequest(method, url, in, out)
 	}
 
-	if err := json.Unmarshal(bytes, out); err != nil {
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("Is VALORANT running? error occurred while running local request: " + string(bodyBytes))
+	}
+
+	if err := json.Unmarshal(bodyBytes, out); err != nil {
 		return err
 	}
 
