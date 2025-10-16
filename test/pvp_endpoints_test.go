@@ -27,7 +27,7 @@ func TestRetryToken(t *testing.T) {
 
 	// call some request without headers
 	if _, err := client.GetPlayerLoadout(); err != nil {
-		t.Fatalf("expected no error, got %v", err)
+		t.Fatalf("expected no error in second call, got %v", err)
 	}
 }
 

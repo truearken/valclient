@@ -9,6 +9,8 @@ type GetOwnedItemsResponse struct {
 	Entitlements []struct {
 		TypeID string `json:"TypeID"`
 		ItemID string `json:"ItemID"`
+		// optional
+		InstanceID *string `json:"InstanceID"`
 	} `json:"Entitlements"`
 }
 
