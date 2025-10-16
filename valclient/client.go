@@ -99,7 +99,7 @@ func (c *ValClient) RunRequest(method, url string, in any, out any) error {
 		return err
 	}
 
-	if resp.StatusCode == http.StatusBadRequest && bytes.Contains(bodyBytes, []byte(`"errorCode": "BAD_CLAIMS"`)) {
+	if resp.StatusCode == http.StatusBadRequest && bytes.Contains(bodyBytes, []byte("BAD_CLAIMS")) {
 		authResp, err := c.authenticate()
 		if err != nil {
 			return err
