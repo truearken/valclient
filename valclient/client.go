@@ -11,6 +11,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"time"
 )
 
 type ValClientPlayer struct {
@@ -18,8 +19,9 @@ type ValClientPlayer struct {
 }
 
 type ValClientLocal struct {
-	Port     string
-	Password string
+	Port       string
+	Password   string
+	HttpClient *http.Client
 }
 
 type ValClient struct {
@@ -36,10 +38,18 @@ func NewClient() (*ValClient, error) {
 		return nil, err
 	}
 
+	httpClient := &http.Client{
+		Timeout: time.Second * 5,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
+
 	client := &ValClient{
 		Local: &ValClientLocal{
-			Port:     lockfile.Port,
-			Password: lockfile.Password,
+			Port:       lockfile.Port,
+			Password:   lockfile.Password,
+			HttpClient: httpClient,
 		},
 	}
 
@@ -148,12 +158,6 @@ func (c *ValClient) authenticate() (*AuthenticateResponse, error) {
 }
 
 func (c *ValClient) RunLocalRequest(method, endpoint string, in any, out any) error {
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		},
-	}
-
 	body := new(bytes.Buffer)
 	if in != nil {
 		bytes, err := json.Marshal(in)
@@ -172,7 +176,7 @@ func (c *ValClient) RunLocalRequest(method, endpoint string, in any, out any) er
 	}
 	req.SetBasicAuth("riot", c.Local.Password)
 
-	resp, err := client.Do(req)
+	resp, err := c.Local.HttpClient.Do(req)
 	if err != nil {
 		return errors.New("Is VALORANT running? error occurred while running local request: " + err.Error())
 	}
@@ -195,6 +199,12 @@ func (c *ValClient) RunLocalRequest(method, endpoint string, in any, out any) er
 	return nil
 }
 
+func (c *ValClient) Close() {
+	if c.Local.HttpClient != nil {
+		c.Local.HttpClient.CloseIdleConnections()
+	}
+}
+
 type LockfileData struct {
 	Name     string
 	Pid      string
@@ -209,6 +219,7 @@ func getLockFile() (*LockfileData, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer lockfile.Close()
 
 	fileData, err := io.ReadAll(lockfile)
 	if err != nil {
@@ -238,6 +249,7 @@ func readLogfile() (*LogFileData, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 
 	bytes, err := io.ReadAll(file)
 	if err != nil {
