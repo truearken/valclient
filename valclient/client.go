@@ -142,13 +142,6 @@ type AuthenticateResponse struct {
 }
 
 func (c *ValClient) authenticate() (*AuthenticateResponse, error) {
-	lockfile, err := getLockFile()
-	if err != nil {
-		return nil, err
-	}
-	c.Local.Port = lockfile.Port
-	c.Local.Password = lockfile.Password
-
 	authResp := new(AuthenticateResponse)
 	if err := c.RunLocalRequest(http.MethodGet, "/entitlements/v1/token", nil, authResp); err != nil {
 		return nil, err
@@ -178,7 +171,24 @@ func (c *ValClient) RunLocalRequest(method, endpoint string, in any, out any) er
 
 	resp, err := c.Local.HttpClient.Do(req)
 	if err != nil {
-		return errors.New("Is VALORANT running? error occurred while running local request: " + err.Error())
+		lockfile, err := getLockFile()
+		if err != nil {
+			return err
+		}
+		c.Local.Port = lockfile.Port
+		c.Local.Password = lockfile.Password
+
+		req, err := http.NewRequest(method, fmt.Sprintf("https://127.0.0.1:%s%s", c.Local.Port, endpoint), body)
+		if err != nil {
+			return err
+		}
+		req.SetBasicAuth("riot", c.Local.Password)
+
+		resp, err = c.Local.HttpClient.Do(req)
+		if err != nil {
+			return errors.New("Is VALORANT running? error occurred while running local request: " + err.Error())
+		}
+		defer resp.Body.Close()
 	}
 	defer resp.Body.Close()
 
