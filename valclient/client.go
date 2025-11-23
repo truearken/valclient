@@ -33,11 +33,6 @@ type ValClient struct {
 }
 
 func NewClient() (*ValClient, error) {
-	lockfile, err := getLockFile()
-	if err != nil {
-		return nil, err
-	}
-
 	httpClient := &http.Client{
 		Timeout: time.Second * 5,
 		Transport: &http.Transport{
@@ -47,8 +42,6 @@ func NewClient() (*ValClient, error) {
 
 	client := &ValClient{
 		Local: &ValClientLocal{
-			Port:       lockfile.Port,
-			Password:   lockfile.Password,
 			HttpClient: httpClient,
 		},
 	}
@@ -149,6 +142,13 @@ type AuthenticateResponse struct {
 }
 
 func (c *ValClient) authenticate() (*AuthenticateResponse, error) {
+	lockfile, err := getLockFile()
+	if err != nil {
+		return nil, err
+	}
+	c.Local.Port = lockfile.Port
+	c.Local.Password = lockfile.Password
+
 	authResp := new(AuthenticateResponse)
 	if err := c.RunLocalRequest(http.MethodGet, "/entitlements/v1/token", nil, authResp); err != nil {
 		return nil, err
