@@ -73,9 +73,10 @@ func (lws *LocalWebsocket) UnsubscribeEvent(event string) error {
 }
 
 type LocalWebsocketApiEvent struct {
-	OpCode  int                      `json:"-"`
-	Event   string                   `json:"-"`
-	Payload *LocalWebsocketEventData `json:"-"`
+	OpCode     int                      `json:"-"`
+	Event      string                   `json:"-"`
+	Payload    *LocalWebsocketEventData `json:"-"`
+	RawPayload json.RawMessage          `json:"-"`
 }
 
 type LocalWebsocketEventData struct {
@@ -104,10 +105,9 @@ func (lws *LocalWebsocket) Read(events chan<- *LocalWebsocketApiEvent) error {
 		if err := json.Unmarshal(rawArr[1], &event); err != nil {
 			return err
 		}
-		if err := json.Unmarshal(rawArr[2], eventData); err != nil {
-			return err
-		}
+		// some events don't contain json
+		_ = json.Unmarshal(rawArr[2], eventData)
 
-		events <- &LocalWebsocketApiEvent{OpCode: opCode, Event: event, Payload: eventData}
+		events <- &LocalWebsocketApiEvent{OpCode: opCode, Event: event, Payload: eventData, RawPayload: rawArr[2]}
 	}
 }
